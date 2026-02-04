@@ -5,7 +5,7 @@
 #include <set>
 #include "utils.h"
 
-#define DATAPATH (string)"custom_router/data/"
+#define DATAPATH (string)"routino/data/"
 
 /* All these functions are used to retrieve all the data needed for routing.
  * If a file doesn't exist it will be created first and stored so the next run are faster.
