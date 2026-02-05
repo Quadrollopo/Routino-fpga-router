@@ -28,5 +28,6 @@ routino/*_seu.*
 routino/find_critcal_pips.cpp
 
 # routino generated files
-routino/data*/
+routino/data_*/
+routino/data/*
 routino/cmake-build*/
