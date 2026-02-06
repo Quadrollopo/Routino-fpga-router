@@ -10,7 +10,7 @@ This work was presented at FPL 2025
 ## Quick start
 
 ```bash
-git clone https://github.com/Quadrollopo/Routino-fpga-router.git
+git clone --recurse-submodules https://github.com/Quadrollopo/Routino-fpga-router.git
 python3 -m venv .venv
 make xcvu3p.device
 
