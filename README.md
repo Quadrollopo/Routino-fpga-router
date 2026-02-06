@@ -22,6 +22,12 @@ make BENCHMARKS="logicnets_jscl"
 
 # Getting started
 ## Requirements
+For building routino and test benchmarks you need
+
+* GNU Make
+* Capnproto == 1.3.0
+* Zlib
+* Vivado (optional, used only for checkpoint validation)
 
 Routino takes as input a placed but unrouted design in the FPGA Interchange Format (FPGAIF) and produces a routed design in the same format.
 
@@ -91,9 +97,10 @@ This command:
 
 ## Memory peak comparison
 The following figure compares peak memory usage across a set of designs, comparing Routino with RwRoute and Vivado.  
-Routino shows a substantial reduction in memory usage.
+Routino shows a substantial reduction in memory usage.  
+These results are obtained with a previous version of routino and may differ from the actual version  
 
-![test](images/memory_comparison.png)
+![Memory comparison](images/memory_comparison.png)
 
 
 ## Known issues
@@ -101,12 +108,21 @@ Routino shows a substantial reduction in memory usage.
 - Particularly dense designs may fail to converge
 - On some UltraScale+ families, certain nets are not routed
   These nets appear to be point-to-point and should be trivial to handle, but are currently not supported
+- Using some bounce wires could lead to a non-valid solution, so they are temporarly disabled, unless used to reach a sink.
+This means slightly more routing time and resource usage
 
 ## FAQ
 
 **Why is memory usage so low?**  
-Routino exploits structural redundancy in FPGA routing resources and uses a compressed RRG representation.
+Routino achieves low memory usage through three main techniques:
+* A compressed representation of the Routing Resource Graph (RRG)
+* Careful lifetime management of allocated data structures, retaining memory until it is guaranteed to be no longer needed
+* Lazy allocation of large data structures, allocating memory only when required
 
-**Does this replace Vivado routing?**  
-No. Routino is a research tool and currently focuses on FPGAIF-based flows.
+**Why lower memory consumption leads to improved routing time?**  
+It’s difficult to pinpoint the exact cause of the improvement, or quantify its impact precisely,
+but it’s likely driven by two factors: the high cost of memory allocation and the increased cache-hit rate resulting
+from a smaller memory footprint.
+
+
 
