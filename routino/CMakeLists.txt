@@ -20,15 +20,3 @@ add_executable(fpga_router main.cpp
         device.cpp
         data.cpp
         data.h)
-add_executable(find_critical_pips
-        find_critcal_pips.cpp
-        utils.cpp
-        utils.h
-        net.h
-        pip_graph.h
-        router.cpp
-        router.h
-        device.h
-        device.cpp
-        data.cpp
-        data.h)
