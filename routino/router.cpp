@@ -273,25 +273,16 @@ void Router::routeIteration(vector<Net> &netsToRoute) {
             if (sinkTile.isRouted)
                 continue;
 
-            //TODO all of this could be moved in readNetsInfo()
-            auto end_type = sinkTile.type;
-            auto sink_wire = sinkTile.wire;
             auto [x_end, y_end] = retrieveCoords(sinkTile.name);
-            int endWire;
             if (sinkTile.prerouted != nullptr) {
-                endWire = sinkTile.prerouted->wire;
-                end_type = sinkTile.prerouted->type;
                 x_end += sinkTile.prerouted->x;
                 y_end += sinkTile.prerouted->y;
-            } else
-                endWire = pipGraph[end_type]->convertWireToIdx(sink_wire);
+            }
 
-
-            auto &endValidWires = wireResources.try_emplace(tileToKey(x_end, y_end, end_type), pipGraph[end_type]->wireResourcesDefault).first->second;
-            wire_resource &endWireGraph = endValidWires[endWire];
+            wire_resource* endWireGraph = sinkTile.wireResource;
 
             // by default all sink wires are forbidden to reduce the search space, so enable the current sink wire
-            endWireGraph.presentCost = 0;
+            endWireGraph->presentCost = 0;
             for (const auto &starting_node : startingNodes)
                 priorityQueue.push(starting_node);
 
@@ -302,7 +293,7 @@ void Router::routeIteration(vector<Net> &netsToRoute) {
             parent.clear();
             priorityQueue.clear();
             // forbid the end wire again
-            endWireGraph.presentCost = -1;
+            endWireGraph->presentCost = -1;
             if (path.empty()) {
                 // No path is found
                 continue;

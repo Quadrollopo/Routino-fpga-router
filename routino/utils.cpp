@@ -182,7 +182,6 @@ vector<Net> readNetsInfo(
 
             uint distance = abs(x_start - x) + abs(y_start - y);
             totDistance += distance;
-            sinks.emplace_back(tileName, tileType, sinkWire, siteName, pinName, false, distance, preroutedSink);
             bb.max_x = max(bb.max_x, x);
             bb.max_y = max(bb.max_y, y);
             bb.min_x = min(bb.min_x, x);
@@ -195,6 +194,10 @@ vector<Net> readNetsInfo(
             // forbit it for now, to avoid other nets to use it.
             // it will be permitted again when routing this net
 			endWireGraph.presentCost = -1;
+
+            sinks.emplace_back(tileName, tileType, sinkWire, siteName, pinName, false, distance,
+                preroutedSink, &endValidWires[wireToReach]);
+
 
         }
         // sort the sinks by total distance

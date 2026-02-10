@@ -14,6 +14,7 @@ struct sink_tile{
     bool isRouted{};
     uint distance{};
     const routing_branch* prerouted{};
+    wire_resource* wireResource;
 };
 
 struct start_edge {
