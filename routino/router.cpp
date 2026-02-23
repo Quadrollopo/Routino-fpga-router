@@ -159,8 +159,7 @@ vector<tilepath_t> Router::findPath(const int targetX, const int targetY, const 
 //TODO this function may be optimized
 routing_branch* Router::buildBranches(
     routing_branch& starting_branch,
-    const vector<tilepath_t>& path,
-    const float nodeCost) const
+    const vector<tilepath_t>& path) const
 {
 
     // findPath return the path reversed, where at the first space there is the end and the last the start
@@ -217,7 +216,6 @@ void Router::routeIteration(vector<Net> &netsToRoute) {
     int routedNets = 0;
     vector<AStarNode> startingNodes;
 
-    const float nodeCost = static_cast<float>(min(exp2(iterCount - 1), exp2(8)));
     int count = 0;
     for (auto &net: netsToRoute) {
 
@@ -308,7 +306,7 @@ void Router::routeIteration(vector<Net> &netsToRoute) {
                 }
             }
 
-            const auto lastBranch = buildBranches(*startingBranch, path, nodeCost);
+            const auto lastBranch = buildBranches(*startingBranch, path);
             lastBranch->sinkId = i;
             }
 
@@ -351,8 +349,10 @@ unordered_map<string, Net> Router::routeNets(vector<Net> &netToRoute) {
         // Update the costs
         float increment = 0;
 		netsWithConflicts = 0;
-        if (iterCount < 9)
-            increment = exp2(iterCount - 1);
+        if (nodeCost < 256) {
+            increment = nodeCost;
+            nodeCost *= 2;
+        }
 
 
         for (auto &net: netToRoute) {

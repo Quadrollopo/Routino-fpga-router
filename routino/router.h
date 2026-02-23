@@ -15,6 +15,7 @@ class Router
     unordered_map<uint, vector<wire_resource>> &wireResources;
     int iterCount = 0;
     uint id_run = 0;
+    float nodeCost = 1;
 
     // To avoid useless allocation, I create beforehand the visited map and the priority queue to clean them after finished
     // This map keep track of which combination of wire-tile is already explored and from which wire-tile it comes from
@@ -26,8 +27,7 @@ class Router
     void routeIteration(vector<Net> &netsToRoute);
     vector<tilepath_t> findPath(int targetX, int targetY, const Net& net);
     vector<tilepath_t> reconstructThePath(shared_ptr<AStarNode>&& bestEndTile, uint wire) const;
-    routing_branch* buildBranches(routing_branch& starting_branch, const vector<tilepath_t>& path,
-                                  float nodeCost) const;
+    routing_branch* buildBranches(routing_branch& starting_branch, const vector<tilepath_t>& path) const;
 public:
 
     Router(unordered_map<uint, vector<wire_resource>> &wireResources,
