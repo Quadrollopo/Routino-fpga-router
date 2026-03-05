@@ -20,6 +20,7 @@ int main(int argc, char* argv[]) {
 	// Get some data structures that are needed for later
 	device dev(netlist.getPart());
     vector<string> devStrList = getStringList(dev);
+	auto wireOut2WireIn = getWireOut2WireIn(dev, devStrList);
     auto tilename2tile = getTileName2Tile(dev);
     vector<string> tileType2Name = getTileType2Name(dev, devStrList);
     auto pins2wire = getPins2Wire(dev, devStrList);
@@ -86,6 +87,7 @@ int main(int argc, char* argv[]) {
                 pins2wire,
                 pipGraphs,
                 wireResources,
+                wireOut2WireIn,
 				preroutedResources);
 
 		Router router(wireResources, tileGraph, pipGraphs);

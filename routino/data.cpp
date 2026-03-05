@@ -778,10 +778,10 @@ vector<pip_graph*> getPipGraph(device &dev,
             wiresToForbid.insert(wire);
         }
     }*/
-    for (const unsigned w : tileTypes[dev.int_type_idx].getWires()) {
+    /*for (const unsigned w : tileTypes[dev.int_type_idx].getWires()) {
         if (devStrList[w].starts_with("BYPASS") || devStrList[w].starts_with("BOUNCE_"))
             wiresToForbid.insert(w);
-    }
+    }*/
     for (int i = 0; i < tileTypes.size(); ++i) {
         if (pipGraphs[i] == nullptr)
             continue;
@@ -1246,4 +1246,120 @@ unordered_map<key_tile, shared_ptr<unordered_map<uint32_t, vector<dest_t>>>> get
     }
     f.close();
     return rgg;
+}
+
+unordered_map<wire_string_idx, wire_string_idx> getWireOut2WireIn(device &dev, vector<string> &devStrList) {
+    unordered_map<wire_string_idx, wire_string_idx> wireout2wirein;
+    fstream f(DATAPATH + "wireout2wirein.bin", ios::binary | ios::in);
+    if(f.is_open()){
+        uint size;
+        f.read(reinterpret_cast<char *>(&size), 4);
+        wireout2wirein.reserve(size);
+        for (int i = 0; i < size; ++i) {
+            uint wireout, wirein;
+            f.read(reinterpret_cast<char*>(&wireout), 4);
+            f.read(reinterpret_cast<char*>(&wirein), 4);
+            wireout2wirein.emplace(wireout, wirein);
+        }
+        f.close();
+        return wireout2wirein;
+    }
+
+	auto sites = dev.getSitesTypes();
+	auto tileTypes = dev.getTileTypes();
+
+	vector<int> sitetype2tiletype(sites.size());
+	for (int i = 0; i < tileTypes.size(); ++i) {
+		auto tile = tileTypes[i];
+		auto tilesites = tile.getSiteTypes();
+		for (const auto & tilesite : tilesites) {
+			sitetype2tiletype[tilesite.getPrimaryType()] = i;
+		}
+	}
+	for (int i = 0; i < sites.size(); ++i) {
+		const auto & site = sites[i];
+		if (!devStrList[site.getName()].starts_with("SLICE"))
+			continue;
+		auto siteWires = site.getSiteWires();
+		auto siteBels = site.getBels();
+		auto siteBelPins = site.getBelPins();
+		auto sitePins = site.getPins();
+
+		unordered_map<uint, uint> bel2outpin;
+		for (const auto & site_bel : siteBels) {
+			auto belPins = site_bel.getPins();
+			for (const unsigned& bel_pin : belPins) {
+				if (siteBelPins[bel_pin].getDir() == LogicalNetlist::Netlist::Direction::OUTPUT) {
+					bel2outpin[site_bel.getName()] = bel_pin;
+					break;
+				}
+			}
+		}
+		unordered_map<uint, uint> belout2belin;
+
+		for (const auto & wire : siteWires) {
+			auto wirePins = wire.getPins();
+			auto firstPin = siteBelPins[wirePins[0]];
+			if (wirePins.size() == 2) {
+				if (firstPin.getDir() == LogicalNetlist::Netlist::Direction::OUTPUT) {
+					belout2belin[wirePins[0]] = wirePins[1];
+				} else
+					belout2belin[wirePins[1]] = wirePins[0];
+			} else {
+				for (const unsigned& wire_pin : wirePins) {
+					auto pin = siteBelPins[wire_pin];
+					if (!devStrList[pin.getName()].starts_with("BYP")) {
+						continue;
+					}
+					belout2belin[wirePins[0]] = wire_pin;
+
+				}
+			}
+		}
+        unordered_map<uint, uint> outpinName2pinIDx;
+
+		auto lastInIdx = site.getLastInput();
+	    outpinName2pinIDx.reserve(sitePins.size() - lastInIdx);
+		for (int j = lastInIdx; j < sitePins.size(); ++j) {
+			auto sitePin = sitePins[j];
+			outpinName2pinIDx[sitePin.getName()] = j;
+		}
+
+		for (int j = 0; j < lastInIdx; ++j) {
+			auto sitePin = sitePins[j];
+			auto startingSiteBelPin = sitePin.getBelpin();
+			if (!belout2belin.contains(startingSiteBelPin))
+				continue;
+			auto pin = belout2belin.at(startingSiteBelPin);
+
+			auto siteBelPin = siteBelPins[pin];
+			if (!devStrList[siteBelPin.getName()].starts_with("BYP")) {
+				continue;
+			}
+			auto outpin = siteBelPin;
+			uint outp;
+			while (bel2outpin.contains(outpin.getBel())) {
+				outp = bel2outpin.at(outpin.getBel());
+				outp = belout2belin.at(outp);
+				outpin = siteBelPins[outp];
+			}
+			auto sitetypeinTile = tileTypes[sitetype2tiletype[i]].getSiteTypes();
+			for (auto sitetypein_tile : sitetypeinTile) {
+				if (sitetypein_tile.getPrimaryType() != i)
+					continue;
+				auto pins2wire = sitetypein_tile.getPrimaryPinsToTileWires();
+                wireout2wirein[pins2wire[outpinName2pinIDx.at(outpin.getName())]] = pins2wire[j];
+				break;
+			}
+		}
+	}
+    f.open(DATAPATH + "wireout2wirein.bin", ios::binary | ios::out);
+    uint size = wireout2wirein.size();
+    f.write(reinterpret_cast<char *>(&size), 4);
+    for (const auto &[wireout, wirein] : wireout2wirein) {
+        f.write((char*)&wireout, 4);
+        f.write((char*)&wirein, 4);
+    }
+    f.close();
+    return wireout2wirein;
 }

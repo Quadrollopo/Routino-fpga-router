@@ -44,4 +44,6 @@ unordered_map<uint, unordered_map<uint, routing_branch>> getPreroutedPaths(devic
                               unordered_map<string, uint> &wirename2wireid
                               );
 
+unordered_map<wire_string_idx, wire_string_idx> getWireOut2WireIn(device &dev, vector<string> &devStrList);
+
 #endif //DATA_H

@@ -63,6 +63,7 @@ vector<Net> readNetsInfo(
         vector<map<pair<string, uint32_t>, uint32_t>> &pins2wire,
         vector<pip_graph*> &tileGraph,
         unordered_map<key_tile, vector<wire_resource>> &wireResources,
+        const unordered_map<wire_string_idx, wire_string_idx> &wireOut2WireIn,
 		const unordered_map<uint, unordered_map<uint, routing_branch>> &preroutedResources
         ) {
     auto start = chrono::steady_clock::now();
@@ -124,6 +125,27 @@ vector<Net> readNetsInfo(
             const auto &[fst, siteType] = site2tileType.at(siteName);
             const auto &[tileName, tileType] = fst;
             auto wire = pins2wire.at(tileType).at({strList[sp.getPin()], siteType});
+            try {
+                wire_string_idx wire2forbid = wireOut2WireIn.at(wire);
+                // cout << tileName << endl;
+                auto [x, y] = retrieveCoords(tileName);
+                uint tileTypeToReach = tileType;
+                uint wireToReach;
+                try {
+                    const routing_branch* preroutedSink = &preroutedResources.at(tileType).at(wire2forbid);
+                    x += preroutedSink->x;
+                    y += preroutedSink->y;
+                    wireToReach = preroutedSink->wire;
+                    tileTypeToReach = preroutedSink->type;
+                } catch (std::out_of_range&) {
+                    wireToReach = tileGraph[tileTypeToReach]->convertWireToIdx(wire2forbid);
+                }
+                auto &endValidWires = wireResources.try_emplace(
+                    tileToKey(x, y, tileTypeToReach), tileGraph[tileTypeToReach]->wireResourcesDefault).first->second;
+                wire_resource &w = endValidWires[wireToReach];
+                w.presentCost = -1;
+
+            } catch (std::out_of_range&) {}
             const routing_branch* preroutedSource = nullptr;
             // Check if for the current net has prerouted paths
             try {

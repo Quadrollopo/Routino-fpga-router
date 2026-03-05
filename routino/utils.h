@@ -26,6 +26,7 @@ using namespace PhysicalNetlist;
 
 typedef uint string_idx;
 typedef uint wire_graph_idx; //Refer to a wire inside the tile graph list of wires
+typedef uint wire_string_idx; //Idx in the string list of the name of the wire
 
 typedef uint32_t key_tile; // unique identifier for tiles
 typedef uint64_t key_tile_wire;
@@ -185,6 +186,7 @@ vector<Net> readNetsInfo(
     vector<map<pair<string, uint32_t>, uint32_t>> &pins2wire,
     vector<pip_graph*> &tileGraph,
     unordered_map<key_tile, vector<wire_resource>> &wireResources,
+    const unordered_map<wire_string_idx, wire_string_idx> &wireOut2WireIn,
     const unordered_map<uint, unordered_map<uint, routing_branch>> &preroutedResources
 );
 
