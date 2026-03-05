@@ -328,10 +328,10 @@ void Router::routeIteration(vector<Net> &netsToRoute) {
 
 /**
  * Route all the given nets
- * @param netToRoute The list of routable nets
+ * @param netsToRoute The list of routable nets
  * @return A map of all routed nets where the key is the name of the net and the value is the net
  */
-unordered_map<string, Net> Router::routeNets(vector<Net> &netToRoute) {
+unordered_map<string, Net> Router::routeNets(vector<Net> &netsToRoute) {
     unordered_map<string, Net> routedNets;
 
     int netsWithConflicts;
@@ -342,9 +342,9 @@ unordered_map<string, Net> Router::routeNets(vector<Net> &netToRoute) {
     << endl;
     do {
         auto start = chrono::steady_clock::now();
-        ranges::sort(netToRoute, greater());
+        ranges::sort(netsToRoute, greater());
         iterCount++;
-        routeIteration(netToRoute);
+        routeIteration(netsToRoute);
         int wireConflicts = 0;
         // Update the costs
         float increment = 0;
@@ -355,7 +355,7 @@ unordered_map<string, Net> Router::routeNets(vector<Net> &netToRoute) {
         }
 
 
-        for (auto &net: netToRoute) {
+        for (auto &net: netsToRoute) {
 			bool haveConflicts = net.updateNodeCosts(increment, conflictWires);
 			if(haveConflicts) {
 			    netsWithConflicts++;
@@ -375,7 +375,7 @@ unordered_map<string, Net> Router::routeNets(vector<Net> &netToRoute) {
 
     } while(netsWithConflicts > 0 && iterCount < MAX_ITER);
 
-    for (auto &net: netToRoute){
+    for (auto &net: netsToRoute){
         routedNets.emplace(net.name, std::move(net));
     }
     return routedNets;

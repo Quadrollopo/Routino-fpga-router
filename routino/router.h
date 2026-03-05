@@ -41,7 +41,7 @@ public:
      * mainly do sorting of the unrouted net list (giving priority to high cost nets), updating cost of resources
      * (to discourage the use of congested resources and encourage the use of the unused ones) and check if there are still conflicts
      */
-    unordered_map<string, Net> routeNets(vector<Net> &netToRoute);
+    unordered_map<string, Net> routeNets(vector<Net> &netsToRoute);
 };
 
 #endif //ROUTER_H
