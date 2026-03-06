@@ -156,7 +156,7 @@ vector<tilepath_t> Router::findPath(const int targetX, const int targetY, const 
     return reconstructThePath(std::move(bestEndTile), sinkWire);
 }
 
-//TODO this function may be optimized
+//TODO this function could be optimized
 routing_branch* Router::buildBranches(
     routing_branch& starting_branch,
     const vector<tilepath_t>& path) const
