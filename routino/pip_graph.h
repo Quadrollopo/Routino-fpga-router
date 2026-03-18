@@ -49,9 +49,9 @@ public:
     }
 
     /**
-     * It is used to find, all the output wires that can be reached from specific wire
-     * This is one of the most important function for the routing, because is called easily around million of times, and
-     * for this reason I tried to optimize as much as possible, especially in terms of memory allocation, I avoid to allocate
+     * Function that return all the output wires that can be reached from specific wire, and their cost
+     * This is one of the most important function for the routing, because is called easily around million of times.
+     * For this reason I tried to optimize as much as possible, especially in terms of memory allocation I avoid to allocate
      * new memory and reuse the one already allocated
      * @param wire The starting wire name idx
      * @param wireResources The array with the wire resources of the current tile
